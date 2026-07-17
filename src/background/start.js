@@ -447,7 +447,9 @@ function start(browser) {
         if (idx !== -1) {
             self.pendingPorts.splice(idx, 1);
         }
-        sendResponse(result);
+        if (typeof sendResponse === 'function') {
+            sendResponse(result);
+        }
     }
     function handleMessage(_message, _sender, _sendResponse) {
         if (self.hasOwnProperty(_message.action)) {
