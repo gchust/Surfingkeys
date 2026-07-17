@@ -323,6 +323,35 @@ const Front = (function() {
         });
     };
     self.openContainer = _actions['openContainer'];
+    _actions['chooseTabGroup'] = function() {
+        RUNTIME('getTabGroups', {}, function(response) {
+            const groups = response.groups;
+            if (groups.length === 0) {
+                return;
+            }
+
+            showElement(_tabs, () => {
+                setSanitizedContent(_tabs, "");
+                _tabs.className = "";
+                const hintLabels = hints.genLabels(groups.length);
+                groups.forEach(function(group, index) {
+                    const groupElement = document.createElement('div');
+                    groupElement.setAttribute('class', 'sk_tab_group');
+                    setSanitizedContent(groupElement, `<div class=sk_tab_group_header><div><div class=sk_tab_hint>${hintLabels[index]}</div><span class=sk_tab_group_title></span></div></div><div class=sk_tab_group_details></div>`);
+                    renderTabTitles(groupElement.querySelector("div.sk_tab_group_details"), group.tabs);
+                    const activeState = group.active ? '☑ ' : '';
+                    setSanitizedContent(groupElement.querySelector("span.sk_tab_group_title"), activeState + htmlEncode(group.title || "Unnamed group"));
+                    const tabHint = groupElement.querySelector("div.sk_tab_hint");
+                    tabHint.label = hintLabels[index];
+                    tabHint.link = {groupId: group.id};
+                    _tabs.append(groupElement);
+                });
+            }, (matched) => {
+                RUNTIME('focusTabGroup', {groupId: matched.groupId});
+            });
+        });
+    };
+    self.chooseTabGroup = _actions['chooseTabGroup'];
     _actions['groupTab'] = function() {
         RUNTIME('getTabGroups', {}, function(response) {
             const groups = response.groups;
