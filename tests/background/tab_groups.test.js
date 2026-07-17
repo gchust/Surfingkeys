@@ -40,4 +40,8 @@ describe('tab group switching', () => {
         const target = selectTabGroup(groups, tabs[0], undefined, 1, [11, 12]);
         expect(target.tab.id).toBe(12);
     });
+
+    test('does nothing when there are no open tab groups', () => {
+        expect(selectTabGroup([], tabs[0], 'next', undefined, [])).toBeNull();
+    });
 });
