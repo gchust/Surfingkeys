@@ -36,6 +36,15 @@ export default function(api, clipboard, insert, normal, hints, visual, front, br
     mapkey(';G', '#3Group this tab', function() {
         front.groupTab();
     });
+    mapkey(';g', '#3Choose a tab group', function() {
+        front.chooseTabGroup();
+    });
+    mapkey('[g', '#3Go to the previous tab group', function() {
+        front.focusTabGroup('previous');
+    });
+    mapkey(']g', '#3Go to the next tab group', function() {
+        front.focusTabGroup('next');
+    });
     mapkey('?', '#0Show usage', function() {
         front.showUsage();
     });

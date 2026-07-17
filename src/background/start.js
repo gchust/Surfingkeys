@@ -2,6 +2,7 @@ import {
     filterByTitleOrUrl,
 } from '../common/utils.js';
 import llmClients from './llm.js';
+import { organizeTabGroups, selectTabGroup } from './tab_groups.js';
 
 function request(url, onReady, headers, data, onException) {
     headers = headers || {};
@@ -795,39 +796,38 @@ function start(browser) {
     self.collapseGroup = function(message, sender, sendResponse) {
         chrome.tabGroups.update(message.groupId, {collapsed: message.collapsed});
     };
+    function getTabGroups(sender, callback) {
+        const windowId = sender.tab.windowId;
+        chrome.tabGroups.query({windowId}, function(groups) {
+            chrome.tabs.query({windowId}, function(tabs) {
+                callback(organizeTabGroups(
+                    groups,
+                    tabs,
+                    sender.tab.id,
+                    chrome.tabGroups?.TAB_GROUP_ID_NONE ?? -1
+                ));
+            });
+        });
+    }
     self.getTabGroups = function(message, sender, sendResponse) {
-        chrome.tabGroups.query({}, function(groups) {
-            let activeGroup = -1;
-            // retrieve all tabs of each group
-            chrome.tabs.query({}, function(tabs) {
-                const tabsInGroup = {};
-                tabs.forEach(function(tab) {
-                    if (tab.groupId && tab.groupId !== (chrome.tabGroups?.TAB_GROUP_ID_NONE ?? -1)) {
-                        if (!tabsInGroup[tab.groupId]) {
-                            tabsInGroup[tab.groupId] = [];
-                        }
-                        if (tab.id === sender.tab.id) {
-                            activeGroup = tab.groupId;
-                        }
-                        tabsInGroup[tab.groupId].push({
-                            id: tab.id,
-                            title: tab.title,
-                            url: tab.url,
-                            favIconUrl: tab.favIconUrl,
-                            active: tab.active,
-                            index: tab.index
-                        });
-                    }
-                });
-
-                groups = groups.filter((g) => !g.hermit);
-                groups.forEach(function(group) {
-                    group.tabs = tabsInGroup[group.id] || [];
-                    group.active = group.id === activeGroup;
-                });
-
-                _response(message, sendResponse, {
-                    groups: groups
+        getTabGroups(sender, function(groups) {
+            _response(message, sendResponse, {groups});
+        });
+    };
+    self.focusTabGroup = function(message, sender, sendResponse) {
+        getTabGroups(sender, function(groups) {
+            const target = selectTabGroup(groups, sender.tab, message.direction, message.groupId, tabHistory);
+            if (!target) {
+                _response(message, sendResponse, {focused: false});
+                return;
+            }
+            chrome.tabGroups.update(target.group.id, {collapsed: false}, function() {
+                chrome.tabs.update(target.tab.id, {active: true}, function() {
+                    _response(message, sendResponse, {
+                        focused: true,
+                        groupId: target.group.id,
+                        tabId: target.tab.id
+                    });
                 });
             });
         });

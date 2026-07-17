@@ -328,6 +328,16 @@ function createFront(insert, normal, hints, visual, browser) {
         });
     };
 
+    self.chooseTabGroup = function() {
+        self.command({
+            action: 'chooseTabGroup'
+        });
+    };
+
+    self.focusTabGroup = function(direction) {
+        RUNTIME('focusTabGroup', {direction});
+    };
+
     self.openContainer = function() {
         self.command({
             action: 'openContainer'
