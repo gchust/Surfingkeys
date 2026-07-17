@@ -1,5 +1,7 @@
 Thank you for willing to contribute on this project.
 
+> Fork contributors: read [docs/fork-maintenance.md](docs/fork-maintenance.md) before creating a branch. Fork-specific work starts from `custom/master`; `master` is reserved as an upstream mirror.
+
 ## Reporting issues
 
 Please use below template to report issue, or you could click menu item from SurfingKeys icon in browser's tool bar.
